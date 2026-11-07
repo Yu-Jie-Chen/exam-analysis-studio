@@ -1,0 +1,16 @@
+# 学员材料与导出物一律不入库
+work/
+preview/
+*.pdf.tmp
+
+# 运行产物
+__pycache__/
+*.py[cod]
+*.log
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

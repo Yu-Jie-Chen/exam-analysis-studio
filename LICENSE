@@ -1,0 +1,24 @@
+版权所有 © 2026 文源教育。保留所有权利。
+
+本仓库（exam-analysis-studio）供文源教育内部教学使用。未经书面许可，不得复制、
+分发、修改后对外发布，或用于本机构之外的教学与商业活动。
+
+仓库中的学生信息、试卷与分析报告均为虚构示例（"王小明"），不含真实学员数据。
+
+---
+
+`vendor/` 下的渲染器与品牌素材来自文源教育教学工作台，同属本机构内部代码：
+standards.py / final_report.py / compact_report.py / poster_report.py / delivery_reports.py。
+
+`vendor/assets/` 中的字体按 SIL Open Font License 1.1 分发，全文见
+`vendor/assets/OFL.txt`。字体可以随本仓库一起使用，但不得单独转售。
+
+---
+
+Copyright © 2026 Wenyuan Education. All rights reserved.
+
+Internal use only. No part of this repository may be redistributed outside the
+organisation without written permission.
+
+Fonts in `vendor/assets/` are distributed under the SIL Open Font License 1.1;
+see `vendor/assets/OFL.txt`.

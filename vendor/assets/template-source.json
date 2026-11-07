@@ -1,0 +1,6 @@
+{
+  "source": "文源教育_最终版生成代码",
+  "pdfSha256": "fe40293ddd25dcc293ecd3da148d885f5dd172e5bcec8c3eca63809a8d5a11b2",
+  "layout": "最终版五页模板：封面、成绩与失分、复习规划、两页重点题附件",
+  "adaptation": "final_report.py；保留品牌路径、字体、色彩与全矢量封面，内容改为当前学生数据。"
+}
