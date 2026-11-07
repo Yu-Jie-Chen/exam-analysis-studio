@@ -198,8 +198,8 @@ def build(data: dict) -> tuple[str, str]:
 <table><tbody>{plan_html}</tbody></table>
 <p>{text(data.get("plan")) if data.get("plan") else "<i>待填：分阶段任务与复测</i>"}</p></section>
 
-<section><h2>五、沟通与配合</h2>
-<p><b>老师沟通：</b>{text(data.get("teacherCommunication")) if data.get("teacherCommunication") else "<i>待补</i>"}</p>
+<section><h2>五、诊断反馈</h2>
+<p><b>跟孩子复盘：</b>{text(data.get("teacherCommunication")) if data.get("teacherCommunication") else "<i>待补</i>"}</p>
 <p><b>家长配合：</b>{text(data.get("parentSupport")) if data.get("parentSupport") else "<i>待补</i>"}</p></section>
 
 <section><h2>六、待校核</h2>
@@ -247,9 +247,9 @@ def build(data: dict) -> tuple[str, str]:
     for label, value in plan:
         lines.append(f"- **{label}**：{value or '待补'}")
     lines += ["", f"- **完整计划**：{data.get('plan') or '待补'}", ""]
-    lines += ["## 沟通与配合", "",
-              f"- **老师**：{data.get('teacherCommunication') or '待补'}",
-              f"- **家长**：{data.get('parentSupport') or '待补'}", ""]
+    lines += ["## 诊断反馈", "",
+              f"- **跟孩子复盘**：{data.get('teacherCommunication') or '待补'}",
+              f"- **家长配合**：{data.get('parentSupport') or '待补'}", ""]
     lines += ["## 待校核", ""] + ([f"- {item}" for item in todo_items] or ["- 无"]) + ["", appendix_note, ""]
     return html_doc, "\n".join(lines)
 

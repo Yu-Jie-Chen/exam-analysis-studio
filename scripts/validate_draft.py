@@ -21,12 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import load  # noqa: E402
 
 SHORT_LIMITS = {
-    "strengthText": ("优势", 60),
-    "weaknessText": ("薄弱", 60),
-    "directionText": ("学习方向", 60),
-    "planFirst": ("优先处理", 100),
-    "planNext": ("随后巩固", 100),
-    "planLater": ("后续专题", 100),
+    "strengthText": ("优势", 75),
+    "weaknessText": ("薄弱", 75),
+    "directionText": ("学习方向", 50),
+    "planFirst": ("优先处理", 110),
+    "planNext": ("随后巩固", 110),
+    "planLater": ("后续专题", 110),
+    "teacherCommunication": ("诊断反馈·复盘", 110),
+    "parentSupport": ("诊断反馈·家长", 100),
 }
 COVER_FIELDS = {
     "student": "学生姓名",

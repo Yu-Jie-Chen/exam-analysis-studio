@@ -38,6 +38,11 @@ def text(value):
     return escape(str(value or '')).replace('\n', '<br/>')
 
 
+def measure(markup, width, size):
+    style = ParagraphStyle('m', fontName='WYRegular', fontSize=size, leading=size*1.56, wordWrap='CJK', splitLongWords=True)
+    return Paragraph(markup, style).wrap(width, 10000)[1]
+
+
 def priority(d):
     rows = [q for q in d['questions'] if not scored(q) or q['score'] < q['max']]
     return sorted(rows, key=lambda q: (-q.get('priority', 0), not scored(q), -(q['max']-(q.get('score') or 0))))
@@ -59,12 +64,19 @@ class Layout:
         self.c.setStrokeColor(HexColor(color)); self.c.setLineWidth(width); self.c.line(x,H-y,x2,H-y2)
 
     def para(self, x, y, value, width, max_height, size=9.1, color=D, bold=False, label='报告摘要'):
-        for fs in [size, size-.3, size-.6, size-.9, max(7.7,size-1.2)]:
+        return self.para_markup(x,y,text(value),width,max_height,size,color,bold,label)
+
+    def para_markup(self, x, y, markup, width, max_height, size=9.1, color=D, bold=False, label='报告摘要'):
+        for fs in [size, size-.3, size-.6, size-.9, max(7.4,size-1.2)]:
             style = ParagraphStyle('wy',fontName='WYBold' if bold else 'WYRegular',fontSize=fs,leading=fs*1.56,textColor=HexColor(color),wordWrap='CJK',splitLongWords=True)
-            p = Paragraph(text(value),style); _, height = p.wrap(width,10000)
+            p = Paragraph(markup,style); _, height = p.wrap(width,10000)
             if height <= max_height:
                 p.drawOn(self.c,x,H-y-height); return y+height
         raise ValueError(f'「{label}」文字超出最终模板区域，请在报告文案中精简；完整内容保留在逐题记录。')
+
+    def rgt(self, x, y, s, size=8.5, bold=False, color=D):
+        self.c.setFillColor(HexColor(color)); self.c.setFont('WYBold' if bold else 'WYRegular', size)
+        self.c.drawRightString(x, H-y, str(s))
 
     def logo(self,x,y,w=23):
         self.c.saveState();self.c.setFillColor(HexColor(O))
@@ -151,7 +163,7 @@ def export_final_pdf(original,kind='first'):
     L.txt(137,145,'满分',8,color='#666666');L.txt(137,172,number(full),16,True,O)
     summary=f'得分率 {rate*100:.1f}% · 失分 {number(lost)} 分' if complete else f'已核 {number(known)}/{number(full)}分 · 待核 {number(full-known)}分'
     L.txt(41,202,summary,8.7);L.bar(41,213,137,rate)
-    cx,cy,rad=230,H-220,23
+    cx,cy,rad=232,H-206,21
     # The dial is a 100-point score, normalized by the subject's full marks.
     # An incomplete score is not enough to claim a full-paper normalized score.
     gauge_rate=score/full if complete and full else None
@@ -166,14 +178,27 @@ def export_final_pdf(original,kind='first'):
     pointer.lineTo(cx-nx*1.9,cy-ny*1.9);pointer.close()
     c.setFillColor(HexColor(N))
     if gauge_rate is not None:c.drawPath(pointer,fill=1,stroke=0)
-    gauge_label=f'{gauge_rate*100:.1f}'.rstrip('0').rstrip('.')+'分' if gauge_rate is not None else '待核'
-    c.setFont('WYBold',9);c.drawCentredString(cx,H-247,gauge_label);c.restoreState()
-    L.para(41,232,'优势：'+strong,150,71,8.5,G,label='优势短摘要')
-    L.para(41,310,'短板：'+weak,234,47,8.7,R,label='薄弱短摘要')
+    c.restoreState()
+    y=L.para_markup(41,236,f'<font name="WYBold" color="{G}">优势｜</font>{text(strong)}',234,40,9.0,N,label='优势短摘要')
+    full_qs=[q for q in d['questions'] if scored(q) and q['score']==q['max']]
+    if full_qs:
+        ids='、'.join(str(q['id']) for q in full_qs[:8])
+        note=f'满分 {len(full_qs)} 题：第{ids}题'+('…' if len(full_qs)>8 else '')
+        y=L.para_markup(41,y+2,f'<font color="#6B7A8A">{text(note)}</font>',234,15,7.5,'#6B7A8A',label='优势补充说明')
+    y=L.para_markup(41,y+10,f'<font name="WYBold" color="{R}">短板｜</font>{text(weak)}',234,40,9.0,N,label='薄弱短摘要')
+    top_lost=[q for q in rows if scored(q)][:3]
+    if top_lost:
+        note='、'.join(f"第{q['id']}题{number(q['max']-q['score'])}分" for q in top_lost)
+        y=L.para_markup(41,y+2,f'<font color="#6B7A8A">失分最重：{text(note)}</font>',234,15,7.5,'#6B7A8A',label='薄弱补充说明')
+    if top_lost and y+18<366:
+        gain=sum(q['max']-q['score'] for q in top_lost)
+        target='先拿回 '+number(gain)+' 分：'+' · '.join(f"第{q['id']}题" for q in top_lost)
+        y=L.para_markup(41,y+8,f'<font color="#9A6A2E">{text(target)}</font>',234,14,7.6,'#9A6A2E',label='本轮目标')
     paired=d.get('pairedScores',{});result_note=direction
     if kind=='retake':
         result_note=(f"同范围得分：{number(paired.get('before',0))}/{number(paired.get('max',0))} → {number(paired.get('after',0))}/{number(paired.get('max',0))}；" if paired.get('max') else '')+'学习验收：'+d.get('retakeMetrics',{}).get('status','待完成')+'。'
-    L.rect(41,365,234,42,'#FFF6E5',radius=4);L.para(48,372,result_note,220,31,8.4,N,label='学习方向短摘要')
+    top=min(max(y+10,372),380);box_h=410-top
+    L.rect(41,top,234,box_h,'#FFF6E5',radius=4);L.para(47,top+7,result_note,222,box_h-12,8.2,N,label='学习方向短摘要')
     types=list(group(d,'type').items())
     if len(types)>6:raise ValueError('最终模板的题型最多展示6类，请合并同类题型名称')
     step=min(70,266/max(1,len(types)))
@@ -185,37 +210,94 @@ def export_final_pdf(original,kind='first'):
         comment=(d.get('typeComments') or {}).get(key) or default_comment
         L.para(320,yy+21,comment,233,max(17,step-27),8.1,color,label=key+'题型说明')
     L.card(27,437,262,318,'03',loss_text+' 分失分去了哪里');L.card(306,437,262,318,'04','做得好的地方，继续保持')
-    loss_types=[(k,max(0,v[2]-v[1])) for k,v in types if v[2]>v[1]]
+    loss_types=sorted([(k,max(0,v[2]-v[1])) for k,v in types if v[2]>v[1]],key=lambda kv:-kv[1])
     cx,cy,rad=158,H-552,44;start=90
     if lost:
         for i,(key,value) in enumerate(loss_types):
             c.setFillColor(HexColor(COLORS[i%len(COLORS)]));c.setStrokeColor(white);c.setLineWidth(.6);c.wedge(cx-rad,cy-rad,cx+rad,cy+rad,start,-360*value/lost,fill=1,stroke=1);start-=360*value/lost
     else:c.setFillColor(HexColor('#E8EDF5'));c.circle(cx,cy,rad,fill=1,stroke=0)
     c.setFillColor(white);c.circle(cx,cy,27,fill=1,stroke=0);L.txt(146,551,number(lost),12,True,N);L.txt(147,568,'失分',9,True,N)
-    y=615
+    y=618;n=max(1,len(loss_types) or 1);step=min(24,86/n)
     for i,(key,value) in enumerate(loss_types or [('已核题目未失分',0)]):
-        L.rect(41,y+2,5,5,COLORS[i%len(COLORS)],radius=1);L.txt(54,y+8,f'{key}：失{number(value)}分'+(f' · {value/lost*100:.1f}%' if lost else ''),9,color=COLORS[i%len(COLORS)]);y+=19
+        color=COLORS[i%len(COLORS)]
+        L.rect(41,y-6,6,6,color,radius=1)
+        L.txt(52,y,f'{key} 失{number(value)}分',9.2,True,color)
+        L.rgt(270,y,f'{value/lost*100:.1f}%' if lost else '—',8.6,True,color)
+        L.rect(52,y+5,210,3,'#EDF1F6',radius=1.5)
+        if lost:L.rect(52,y+5,210*value/lost,3,color,radius=1.5)
+        y+=step
+    if loss_types:
+        ranked=sorted(loss_types,key=lambda kv:-kv[1])
+        insight=f'{ranked[0][0]}失{number(ranked[0][1])}分，占{ranked[0][1]/lost*100:.1f}%，是本次最大失分来源'+(f'；其次是{ranked[1][0]}。' if len(ranked)>1 else '。')
+        L.para_markup(41,700,f'<font color="#6B7A8A">{text(insight)}</font>',233,30,7.9,'#6B7A8A',label='失分结构判断')
+    else:
+        L.para_markup(41,664,'<font color="#6B7A8A">本次已核题目全部得分，没有可拆解的失分结构。</font>',233,30,8.2,'#6B7A8A',label='失分结构判断')
     L.txt(41,739,f'本次实际失分合计{number(lost)}分。' if complete else f'已确认失分{number(lost)}分，另有{number(full-known)}分待核。',7.4,color='#666666')
-    L.txt(320,486,'本次表现较好的部分',9.3,True,G);L.para(320,497,strong,233,89,9,label='优势详细说明')
-    L.txt(320,602,'下一步先补这些地方',9.3,True,O);L.para(320,613,weak,233,65,8.7,label='薄弱详细说明')
-    L.rect(320,691,233,49,'#F1F5FC',radius=4);L.para(327,697,direction,219,37,8.2,N,label='方向说明')
+    L.txt(320,486,'本次表现较好的部分',9.3,True,G)
+    y=L.para_markup(320,497,strong,233,38,8.9,N,label='优势详细说明')
+    show=sorted([q for q in d['questions'] if scored(q) and q['score']>0],key=lambda q:(-(q['score']/q['max']),-q['score']))[:6]
+    if show:
+        y=max(y+8,534)
+        L.txt(320,y,'得分最稳的几道题',7.6,True,'#7A8796');y+=5
+        rh=min(22,max(14,(670-y)/len(show)))
+        for q in show:
+            L.rect(320,y,233,rh-3,'#F7FAF8',radius=2)
+            L.txt(326,y+rh-9,f"第{q['id']}题",8.1,True,N)
+            L.txt(366,y+rh-9,q['topic'],8.1)
+            L.rgt(547,y+rh-9,f"{number(q['score'])}/{number(q['max'])}",8.1,True,G)
+            y+=rh
+    wy=y+14
+    L.txt(320,wy,'下一步先补这些地方',9.3,True,O)
+    y=L.para_markup(320,wy+9,weak,233,40,8.9,R,label='薄弱详细说明')
+    if 736-y>=40:
+        bh=min(48,726-y)
+        if bh>=40:
+            L.rect(320,y+10,233,bh,'#F1F5FC',radius=4)
+            L.para_markup(327,y+17,'<font color="#5A6B7D">保持方法：满分题隔周各做一道变式；每次限时 20 分钟，只查模型与步骤是否完整。</font>',219,bh-14,7.9,'#5A6B7D',label='04保持方法')
+    if y+12<736:L.para_markup(320,738,'<font color="#6B7A8A">按 05 的顺序逐题改，改完在 06 的验收里打勾。</font>',233,12,7.4,'#6B7A8A',label='04页脚注')
     c.showPage();L.header('主要问题和复习安排');L.card(27,100,541,330,'05','哪些地方丢了分，怎么改')
     selected=(rows or (d['questions'] if kind=='retake' else []))[:4]
-    if not selected:L.para(41,146,'已核题目没有失分；后续可按教师安排巩固重点方法，并完成独立新题验证。',511,100,10)
-    yy=144;space=268/max(1,len(selected))
-    for q in selected:
+    if not selected:
+        L.para(41,144,'本次已核题目没有失分；下面这些题的方法要保持，隔周用变式题验证。',511,34,9.6)
+        keep=[q for q in d['questions'] if scored(q)][:16]
+        y=190;rh=min(26,(418-y)/max(1,len(keep)))
+        for q in keep:
+            L.txt(41,y,f"第{q['id']}题 · {q['topic']}",8.8,True,N)
+            L.txt(210,y,'独立复述一遍解法，隔周做一道变式',8.4,color='#6B7A8A')
+            L.rgt(547,y,f"{number(q['score'])}/{number(q['max'])}",8.4,True,G)
+            y+=rh
+    cols=2 if len(selected)==4 else 1
+    cell_w=250 if cols==2 else 511
+    text_w=cell_w-6
+    nrows=(len(selected)+cols-1)//cols if selected else 1
+    gap=12;top0=144;bottom0=418
+    cell_h=(bottom0-top0-gap*(nrows-1))/nrows
+    for i,q in enumerate(selected):
+        r,col=divmod(i,cols);x=41+col*266;y0=top0+r*(cell_h+gap)
         state=(f"复做{number(q['score'])}/{number(q['max'])}分" if kind=='retake' else f"失{number(q['max']-q['score'])}分") if scored(q) else '分数待核'
-        L.txt(41,yy,f"第{q['id']}题 · {q['topic']}（{state}）",9.3,True,O)
-        value='；'.join(v for v in [q.get('digestEvidence') or q.get('studentAnswer'),q.get('digestMastery') or q.get('cause'),q.get('digestAction') or q.get('action')] if v)
-        L.para(41,yy+9,value,511,space-20,9.1,label='第'+q['id']+'题诊断短摘要');yy+=space
-    L.card(27,444,541,172,'06','近期怎么复习：先抓重点，别同时铺开')
+        L.txt(x,y0+3,f"第{q['id']}题 · {q['topic']}（{state}）",8.8,True,O)
+        raw=[('原答',q.get('digestEvidence') or q.get('studentAnswer')),('卡点',q.get('digestMastery') or q.get('cause')),('怎么练',q.get('digestAction') or q.get('action')),('验收',q.get('acceptance'))]
+        cells=[(f'<font name="WYBold" color="#7A8796">{label}｜</font>{text(value)}',f'第{q["id"]}题{label}') for label,value in raw if value]
+        fs=9.0;hs=[measure(m,text_w,fs) for m,_ in cells]
+        for fs in (9.0,8.7,8.4,8.1,7.8):
+            hs=[measure(m,text_w,fs) for m,_ in cells]
+            if 20+sum(hs)<=cell_h:break
+        extra=max(0,min(6,(cell_h-20-sum(hs))/max(1,len(cells))))
+        yy=y0+20
+        for (m,lab),h in zip(cells,hs):
+            yy=L.para_markup(x,yy,m,text_w,h+0.6,fs,N,label=lab)+extra
+    L.card(27,444,541,164,'06','近期怎么复习：先抓重点，别同时铺开')
     defaults=[(selected[0].get('action') if selected else '') or direction,(selected[1].get('action') if len(selected)>1 else '') or d.get('plan') or direction,d.get('plan') or direction]
     for i,(label,key) in enumerate([('优先处理','planFirst'),('随后巩固','planNext'),('后续专题与检查习惯','planLater')]):
-        xx=41+i*175;L.txt(xx,488,label,9,True,N);L.line(xx,497,xx+160,497,B);L.para(xx,505,d.get(key) or defaults[i],160,96,8.6,label=label+'安排')
-    L.card(27,630,541,125,'07','老师怎么沟通，家长怎么配合')
-    comm=d.get('teacherCommunication') or '由任课老师与学生核对当时思路，讲清重点方法，并结合课表约定复习任务和后续反馈日期。'
-    parent=d.get('parentSupport') or '约好时间，提醒落实；记录学生实际遇到的困难，向老师反馈，给予具体鼓励。'
-    L.para(41,672,comm,511,37,9.3,label='老师沟通安排');L.para(41,719,'家长配合：'+parent,511,27,8.5,label='家长配合说明')
+        xx=41+i*175;L.txt(xx,488,label,9,True,N);L.line(xx,497,xx+160,497,B);L.para(xx,505,d.get(key) or defaults[i],160,80,9.4,label=label+'安排')
+    L.para_markup(41,588,'<font color="#6B7A8A">节奏：按上面的顺序推进，每完成一项打勾；两周后按 05 的验收复测。</font>',511,12,7.6,'#6B7A8A',label='06节奏')
+    L.card(27,610,541,145,'07','诊断反馈：怎么跟孩子复盘，家长怎么配合')
+    comm=d.get('teacherCommunication') or '先让孩子复述当时的思路，只问“哪一步卡住了”，不急着讲答案；确认卡点后，约定本周练什么、什么时候交。'
+    parent=d.get('parentSupport') or '只盯约定的一两件事：做没做、拍没拍；不额外加量，不比较分数，完成后说一句具体的肯定。'
+    nxt='本周按 06 的优先项练；下次课用 05 的验收逐项打勾，未过项当堂重做。'
+    y=L.para_markup(41,664,f'<font name="WYBold" color="{N}">跟孩子复盘｜</font>{text(comm)}',511,38,8.8,N,label='诊断反馈·复盘')
+    y=L.para_markup(41,y+5,f'<font name="WYBold" color="{O}">家长配合｜</font>{text(parent)}',511,26,8.6,N,label='诊断反馈·家长')
+    if y+10<736:L.para_markup(41,min(y+8,736),f'<font color="#6B7A8A">接下来｜{text(nxt)}</font>',511,12,7.5,'#6B7A8A',label='诊断反馈·接下来')
     c.showPage();c.save()
     requested=[s.strip() for s in str(d.get('appendixIds') or '').replace('，',',').split(',') if s.strip()]
     if requested:

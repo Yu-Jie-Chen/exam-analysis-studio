@@ -1,12 +1,12 @@
 # 渲染器来源
 
-- 同步时间：2026-11-07 16:59
+- 同步时间：2026-11-07 19:49
 - 来源目录：`F:\文源教育\工作相关\学科设计\教学端工作台`
 
 | 文件 | sha256 前 16 位 |
 | --- | --- |
 | standards.py | `09e3d0674bfaf0c4` |
-| final_report.py | `c4a22dc1a1032887` |
+| final_report.py | `75de47af98f29fed` |
 | compact_report.py | `7098c3cb448a529a` |
 | poster_report.py | `a1e27b159f2dd1cf` |
 | delivery_reports.py | `db19b8b2ea346833` |

@@ -9,7 +9,7 @@ description: >
   化学, 数学, 英语, 生物, 地理 and other subjects. Trigger phrases include 试卷分析,
   分析这张卷子, 逐题分析, 出分析报告, 考试诊断, 讲卷前备课, 试卷分析反馈.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   author: "Yujie Chen"
   license: "Proprietary (internal use)"
   repository: "https://github.com/Yu-Jie-Chen/exam-analysis-studio"
@@ -65,13 +65,18 @@ work/<id>/
 | 1 封面 | 谁的、哪次、什么学科、什么时候出的 | `student` `school` `grade` `subject` `exam` `analysisDate` |
 | 2 左 | 这次考得怎么样：得分、满分、得分率、仪表盘 | 已校核题目的 `score` / `max` |
 | 2 右 | 各类题拿了多少分 + 一句题型点评 | 按 `type` 分组；`typeComments` |
-| 2 下 | 失分环形图、优势、短板 | 按 `type` 的失分；`strengthText` `weaknessText` `directionText` |
-| 3 | 哪些地方丢了分、怎么改（最多 4 题）+ 三段复习 + 老师沟通 / 家长配合 | `priority` 排序；`planFirst/Next/Later` |
+| 2 下 | 失分结构（环形图 + 分题型失分条 + 一句判断）、优势 / 短板 / 本轮目标 | 按 `type` 的失分；`strengthText` `weaknessText` `directionText` |
+| 3 | 哪些地方丢了分、怎么改（最多 4 题，2×2）+ 三段复习 + 诊断反馈（复盘 / 家长配合 / 接下来） | `priority` 排序；`planFirst/Next/Later`；`teacherCommunication` `parentSupport` |
 | 4+ | 附件：每题一段"原答 → 对照 → 参考结果 → 关键解法 → 训练 → 验收" | `appendixIds` 或自动取失分最重的两题 |
 
 硬约束（写文案前先看，超了会直接报错）：**题型最多 6 类**；`strengthText` /
-`weaknessText` / `directionText` 各 ≤60 字；`planFirst` / `planNext` / `planLater` 各
-≤100 字；附件最多 5 题。详见 [`references/report-layout.md`](references/report-layout.md)。
+`weaknessText` 各 ≤75 字；`directionText` ≤50 字；`planFirst` / `planNext` / `planLater`
+各 ≤110 字；`teacherCommunication` ≤110 字；`parentSupport` ≤100 字；附件最多 5 题。
+详见 [`references/report-layout.md`](references/report-layout.md)。
+
+**把版式写满，不要留白。** 优势、短板各写到 3 行左右；三段复习每段 4–5 行；诊断反馈
+两段各 2–3 行。写不满就补证据（题号、失分、步骤），不要用套话凑字；每块最多留 1–2 行白。
+家长看不懂"多配合"，`parentSupport` 要写成能照做的动作：看什么、说什么、不做什么。
 
 ## Non-negotiable rules
 
