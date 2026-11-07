@@ -37,8 +37,8 @@
 | `planFirst` | str ≤110 | 模型 | 第 3 页「优先处理」，写做什么+做多少+做到什么程度 |
 | `planNext` | str ≤110 | 模型 | 第 3 页「随后巩固」 |
 | `planLater` | str ≤110 | 模型 | 第 3 页「后续专题与检查习惯」 |
-| `teacherCommunication` | str ≤110 | 模型/老师 | 诊断反馈·跟孩子复盘：问什么、先不讲什么、约什么时间交 |
-| `parentSupport` | str ≤100 | 模型/老师 | 诊断反馈·家长配合：看哪一两件事、说什么话、不做什么 |
+| `problemText` | str ≤120 | 模型/老师 | 诊断反馈·问题出在哪儿：先一句判断，再落到题号、失分和卡住的那一步 |
+| `nextStepText` | str ≤150 | 模型/老师 | 诊断反馈·接下来怎么做：改哪题、按什么步骤、做几次、什么时候交、怎么算过关 |
 | `followup` | str | 老师 | 沟通后的记录，**不进报告**，只存档 |
 | `appendixIds` | str | 模型 | 附件题号，逗号分隔，≤5 题；留空自动取失分最重的两题 |
 | `typeComments` | `{题型: 说明}` | 模型 | 第 2 页每条题型条下的点评；键必须与 `questions[].type` 完全一致 |
@@ -134,7 +134,7 @@
   "difficultySources": ["2", "3"],
   "plan": "……",
   "planFirst": "……", "planNext": "……", "planLater": "……",
-  "teacherCommunication": "……", "parentSupport": "……",
+  "problemText": "……", "nextStepText": "……",
   "appendixIds": "2,3",
   "typeComments": {"单选": "基础题稳，临界题需要固定判断顺序。"},
   "questions": []

@@ -102,8 +102,8 @@ python scripts/run.py digest work/<id>
 | `strengthText` / `weaknessText` | 75 字（约 3 行） | 第 2 页的优势 / 短板 |
 | `directionText` | 50 字（约 2 行） | 第 2 页米色框 |
 | `planFirst` / `planNext` / `planLater` | 110 字（约 4–5 行） | 第 3 页三栏复习安排 |
-| `teacherCommunication` | 110 字（约 2–3 行） | 第 3 页诊断反馈·跟孩子复盘 |
-| `parentSupport` | 100 字（约 2 行） | 第 3 页诊断反馈·家长配合 |
+| `problemText` | 120 字（约 3 行） | 第 3 页诊断反馈·问题出在哪儿 |
+| `nextStepText` | 150 字（约 3–4 行） | 第 3 页诊断反馈·接下来怎么做 |
 | `typeComments[题型]` | 不卡字数，但每类只有 17–43 pt 高 | 第 2 页题型条下面的点评 |
 
 报告是"扫一眼就懂"的版式，但**每块要写到 3–5 行**：先给结论，再给题号、失分、步骤

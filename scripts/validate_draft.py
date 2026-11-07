@@ -27,8 +27,8 @@ SHORT_LIMITS = {
     "planFirst": ("优先处理", 110),
     "planNext": ("随后巩固", 110),
     "planLater": ("后续专题", 110),
-    "teacherCommunication": ("诊断反馈·复盘", 110),
-    "parentSupport": ("诊断反馈·家长", 100),
+    "problemText": ("诊断反馈·问题", 120),
+    "nextStepText": ("诊断反馈·做法", 150),
 }
 COVER_FIELDS = {
     "student": "学生姓名",

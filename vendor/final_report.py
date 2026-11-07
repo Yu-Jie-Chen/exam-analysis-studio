@@ -138,7 +138,7 @@ def export_final_pdf(original,kind='first'):
         d['analysisDate']=d.get('retakeDate') or d.get('analysisDate')
         for q in d['questions']:
             q['digestEvidence']=q.get('studentAnswer','');q['digestMastery']=q.get('cause','');q['digestAction']=q.get('action','')
-        for field in ['planFirst','planNext','planLater','teacherCommunication']:
+        for field in ['planFirst','planNext','planLater','problemText','nextStepText']:
             d[field]=d.get('retake'+field[0].upper()+field[1:]) or ''
     if not d['questions']:raise ValueError('请先录入题目')
     full,score,known=stats(d);lost=known-score;complete=known==full
@@ -291,13 +291,14 @@ def export_final_pdf(original,kind='first'):
     for i,(label,key) in enumerate([('优先处理','planFirst'),('随后巩固','planNext'),('后续专题与检查习惯','planLater')]):
         xx=41+i*175;L.txt(xx,488,label,9,True,N);L.line(xx,497,xx+160,497,B);L.para(xx,505,d.get(key) or defaults[i],160,80,9.4,label=label+'安排')
     L.para_markup(41,588,'<font color="#6B7A8A">节奏：按上面的顺序推进，每完成一项打勾；两周后按 05 的验收复测。</font>',511,12,7.6,'#6B7A8A',label='06节奏')
-    L.card(27,610,541,145,'07','诊断反馈：怎么跟孩子复盘，家长怎么配合')
-    comm=d.get('teacherCommunication') or '先让孩子复述当时的思路，只问“哪一步卡住了”，不急着讲答案；确认卡点后，约定本周练什么、什么时候交。'
-    parent=d.get('parentSupport') or '只盯约定的一两件事：做没做、拍没拍；不额外加量，不比较分数，完成后说一句具体的肯定。'
-    nxt='本周按 06 的优先项练；下次课用 05 的验收逐项打勾，未过项当堂重做。'
-    y=L.para_markup(41,664,f'<font name="WYBold" color="{N}">跟孩子复盘｜</font>{text(comm)}',511,38,8.8,N,label='诊断反馈·复盘')
-    y=L.para_markup(41,y+5,f'<font name="WYBold" color="{O}">家长配合｜</font>{text(parent)}',511,26,8.6,N,label='诊断反馈·家长')
-    if y+10<736:L.para_markup(41,min(y+8,736),f'<font color="#6B7A8A">接下来｜{text(nxt)}</font>',511,12,7.5,'#6B7A8A',label='诊断反馈·接下来')
+    L.card(27,610,541,185,'07','诊断反馈')
+    problem=d.get('problemText') or d.get('teacherCommunication') or weak
+    step=d.get('nextStepText') or d.get('planFirst') or direction
+    y=L.para_markup(41,666,f'<font name="WYBold" color="{N}">问题出在哪儿｜</font>{text(problem)}',511,46,8.9,N,label='诊断反馈·问题')
+    y=L.para_markup(41,y+8,f'<font name="WYBold" color="{O}">接下来怎么做｜</font>{text(step)}',511,max(30,758-y),8.9,N,label='诊断反馈·做法')
+    pick='、'.join(f"第{q['id']}题" for q in (selected or [])[:4])
+    tail=f'下次课先查：{pick}，按 05 的验收逐条过；未过项当堂重做，不加新题。' if pick else '本次已核题目全部得分：保持现有节奏，隔周用变式题复测一次。'
+    if y+22<790:L.para_markup(41,y+10,f'<font color="#6B7A8A">{escape(tail)}</font>',511,20,7.6,'#6B7A8A',label='诊断反馈·验收')
     c.showPage();c.save()
     requested=[s.strip() for s in str(d.get('appendixIds') or '').replace('，',',').split(',') if s.strip()]
     if requested:
