@@ -38,7 +38,7 @@
 | `planNext` | str ≤110 | 模型 | 第 3 页「随后巩固」 |
 | `planLater` | str ≤110 | 模型 | 第 3 页「后续专题与检查习惯」 |
 | `problemText` | str ≤120 | 模型/老师 | 诊断反馈·问题出在哪儿：先一句判断，再落到题号、失分和卡住的那一步 |
-| `nextStepText` | str ≤150 | 模型/老师 | 诊断反馈·接下来怎么做：改哪题、按什么步骤、做几次、什么时候交、怎么算过关 |
+| `nextStepText` | str ≤150 | 模型/老师 | 诊断反馈·接下来怎么做：改哪题、按什么步骤、做几次、什么时候做完、怎么自查。**动作只派给孩子**，不写"发老师/交给家长" |
 | `followup` | str | 老师 | 沟通后的记录，**不进报告**，只存档 |
 | `appendixIds` | str | 模型 | 附件题号，逗号分隔，≤5 题；留空自动取失分最重的两题 |
 | `typeComments` | `{题型: 说明}` | 模型 | 第 2 页每条题型条下的点评；键必须与 `questions[].type` 完全一致 |
@@ -66,7 +66,7 @@
 | `referenceAnswer` | str | 参考结果。自拟的必须写进 `scoringSource` |
 | `solution` | str | 关键解法：用哪条规律、怎么列、怎么得结果 |
 | `scoringPoints` | str | 分项评分点；没有细则就写"按卷面批改，分项待核" |
-| `scoringSource` | str | 学校细则 / 自拟参考解待复核 / 教师按卷面批改 |
+| `scoringSource` | str | 学校细则 / 自拟参考解待复核 / **卷面红笔批改**（会印进附件，别写"教师…"） |
 | `mastery` | str | 掌握 / 部分掌握 / 未掌握 / 待核实 |
 | `errorType` | str | 概念 / 条件 / 模型 / 运算 / 实验 / 表达 / 流程 / 无 |
 | `evidence` | str | 原答与页码证据（与 `studentAnswer` 互补，可重复） |

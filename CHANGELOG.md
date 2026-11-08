@@ -1,5 +1,20 @@
 # 更新记录
 
+## 0.2.2 — 2026-11-08
+
+报告只对孩子说话：全文不再出现"老师 / 教师 / 家长"。
+
+- 渲染器兜底句去掉"教师"：`得分待教师校核` → `得分待核`，`参考结果待教师核实` → `参考结果待核`，
+  `待教师补充关键解法` → `待补充关键解法`，题型条"尚有 N 分待教师校核" → "尚有 N 分待核"
+- 分析稿（`analysis.md` / `analysis.html`）封面字段"分析教师"改为"分析"
+- `validate_draft.py` 新增"只对孩子说话"检查：`problemText` / `nextStepText` / `materialNotes` /
+  `scoringSource` / 题型点评 / 逐题 `cause` `action` `acceptance` `solution` 等会印进报告的字段
+  出现"老师 / 教师 / 家长 / 班主任 / 校长 / 家教 / 发我 / 找我 / 联系我 / 微信"直接阻塞；
+  `studentAnswer` / `evidence` / `questionText` 是原卷引用，只提示不阻塞
+- 文档同步：`SKILL.md` 新增第 10 条硬规则；`report-layout.md` / `output-schema.md` /
+  `workflow.md` / `quality-gates.md` 把"什么时候交""交给谁"改成孩子自己能做的动作
+- 起因：07 诊断反馈原文写"③ 周日把三样拍照发老师"——报告发出后不再跟进，这句没人执行
+
 ## 0.2.1 — 2026-11-07
 
 第 3 页 07 重做：标题就是"诊断反馈"，只回答两件事——**问题出在哪儿、接下来怎么做**。

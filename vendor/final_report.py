@@ -112,11 +112,11 @@ def appendix_pdf(d, questions):
     story=[]
     for i,q in enumerate(questions):
         if i:story.append(PageBreak())
-        score=f"{number(q['score'])}/{number(q['max'])}分" if scored(q) else '得分待教师校核'
+        score=f"{number(q['score'])}/{number(q['max'])}分" if scored(q) else '得分待核'
         has_practice=bool(str(q.get('practiceQuestion') or '').strip())
         subtitle=f"{score} / 原来怎么答 · 正确怎么做"+(' · 自主练习' if has_practice else '')
         story += [Paragraph(text(f"附件 {chr(65+i)}  第{q['id']}题 · {q['topic']}"),title),Spacer(1,8),Paragraph(text(subtitle),body),Spacer(1,9)]
-        sections=[('学生原始作答',q.get('studentAnswer') or q.get('evidence') or '原始作答待核对'),('作答对照与问题定位',q.get('cause') or q.get('digestMastery') or '待结合原始作答补充分析'),('参考结果',q.get('referenceAnswer') or '参考结果待教师核实'),('这道题先看哪里',q.get('conditions') or q.get('challenge') or '待教师补充关键条件'),('关键解法',q.get('solution') or '待教师根据原题补充关键解法'),('下次遇到这类题，按这个顺序做',q.get('action') or q.get('digestAction') or '待教师填写训练步骤')]
+        sections=[('学生原始作答',q.get('studentAnswer') or q.get('evidence') or '原始作答待核对'),('作答对照与问题定位',q.get('cause') or q.get('digestMastery') or '待结合原始作答补充分析'),('参考结果',q.get('referenceAnswer') or '参考结果待核'),('这道题先看哪里',q.get('conditions') or q.get('challenge') or '待补充关键条件'),('关键解法',q.get('solution') or '待补充关键解法'),('下次遇到这类题，按这个顺序做',q.get('action') or q.get('digestAction') or '待填写训练步骤')]
         if has_practice:sections.append(('自主练习',q['practiceQuestion']))
         sections.append(('验收要求',q.get('acceptance') or '独立完成；结果、关键步骤及必要表达完整。'))
         for label,value in sections:
@@ -206,7 +206,7 @@ def export_final_pdf(original,kind='first'):
         yy=148+i*step;color=COLORS[i%len(COLORS)];v=got/verified if verified else 0
         L.txt(320,yy,key,9,True,color);L.txt(421,yy,f'{number(got)} / {number(total)}',8.5);L.txt(521,yy,f'{v*100:.1f}%' if verified==total else '待核',8,True,color);L.bar(320,yy+9,233,v,color)
         wrong=[q for q in d['questions'] if q['type']==key and scored(q) and q['score']<q['max']]
-        default_comment=(f"尚有{number(total-verified)}分待教师校核。" if verified<total else ('第'+'、'.join(q['id'] for q in wrong[:3])+'题失分，重点复习'+'、'.join(dict.fromkeys(q['topic'] for q in wrong[:2]))+'。' if wrong else '本次该题型均取得满分，继续巩固。'))
+        default_comment=(f"尚有{number(total-verified)}分待核。" if verified<total else ('第'+'、'.join(q['id'] for q in wrong[:3])+'题失分，重点复习'+'、'.join(dict.fromkeys(q['topic'] for q in wrong[:2]))+'。' if wrong else '本次该题型均取得满分，继续巩固。'))
         comment=(d.get('typeComments') or {}).get(key) or default_comment
         L.para(320,yy+21,comment,233,max(17,step-27),8.1,color,label=key+'题型说明')
     L.card(27,437,262,318,'03',loss_text+' 分失分去了哪里');L.card(306,437,262,318,'04','做得好的地方，继续保持')

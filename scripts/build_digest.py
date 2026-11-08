@@ -135,7 +135,7 @@ def build(data: dict) -> tuple[str, str]:
         ("学校", data.get("school")),
         ("考试日期", data.get("examDate")),
         ("分析日期", data.get("analysisDate")),
-        ("分析教师", data.get("teacher")),
+        ("分析", data.get("teacher")),
         ("复核", data.get("reviewer")),
         ("交付日期", data.get("deliveryDate")),
     ]

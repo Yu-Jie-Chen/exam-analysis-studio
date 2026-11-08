@@ -64,7 +64,7 @@ python scripts/run.py pages work/<id> --max-width 1800
 
 **分数拿不准的三种情况**：
 
-- 有满分、有得分，但看不到评分细则 → 仍然记 `score`，`scoringSource` 写"教师按卷面批改"；
+- 有满分、有得分，但看不到评分细则 → 仍然记 `score`，`scoringSource` 写"卷面红笔批改"（这行会印进附件，不要写"教师…"）；
 - 有满分，得分被涂改或两处矛盾 → `score: null`，`mastery: "待核实"`，在 `materialNotes` 里说明；
 - 整页缺失 → 不要建这一题的记录，在 `materialNotes` 写清"第 X 页缺失，第 N 题未覆盖"。
 

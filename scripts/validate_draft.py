@@ -30,6 +30,24 @@ SHORT_LIMITS = {
     "problemText": ("诊断反馈·问题", 120),
     "nextStepText": ("诊断反馈·做法", 150),
 }
+# 报告只对孩子（及其家长）说话：发出之后不再有人跟进，所以不能把动作派给老师。
+# 这些字眼出现在任何会印进报告的字段里，都说明文案还在对着老师写。
+BANNED_WORDS = ("老师", "教师", "家长", "班主任", "校长", "家教", "发我", "找我", "联系我", "微信")
+# 会原样印进报告的文案字段：这里出现"老师/家长"，就是我们自己在对老师说话。
+AUTHORED_TOP = (
+    "summary", "materialNotes", "strengthText", "weaknessText", "directionText",
+    "planFirst", "planNext", "planLater", "problemText", "nextStepText", "difficultyConclusion",
+    "retakeSummary", "retakePlan", "retakeStrength", "retakeWeakness", "retakeDirection",
+    "followup", "scopeChangeReason", "teacherCommunication",
+)
+AUTHORED_Q = (
+    "cause", "action", "acceptance", "solution", "referenceAnswer", "scoringSource", "conditions",
+    "challenge", "scoringPoints", "errorType", "method", "criticalPoints", "digestMastery",
+    "digestAction", "difficultyReason", "abilityTask", "practiceQuestion", "practiceAnswer",
+    "teachingClass", "teachingEvidence",
+)
+# 原卷和原答是引用，可能本来就写着"老师"，提醒一下，不算阻塞。
+QUOTE_Q = ("studentAnswer", "evidence", "questionText")
 COVER_FIELDS = {
     "student": "学生姓名",
     "exam": "考试名称",
@@ -109,6 +127,9 @@ def check(draft: dict) -> dict:
         elif len(value) > limit:
             result["blocking"].append(f"{label}（{field}）{len(value)} 字，超过 {limit} 字会撑破模板")
 
+    result["blocking"].extend(_teacher_talk(data, questions))
+    result["notes"].extend(_teacher_talk_quotes(questions))
+
     appendix = str(data.get("appendixIds") or "").strip()
     if appendix:
         ids = [part.strip() for part in appendix.replace("，", ",").split(",") if part.strip()]
@@ -146,6 +167,41 @@ def check(draft: dict) -> dict:
             "交付验收里还有 " + str(len(manual)) + " 项人工确认（署名、复核、公司验收），在工作台里完成"
         )
     return result
+
+
+def _hit(value) -> str:
+    text = str(value or "")
+    return next((word for word in BANNED_WORDS if word in text), "")
+
+
+def _teacher_talk(data: dict, questions: list) -> list[str]:
+    problems = []
+    for field in AUTHORED_TOP:
+        word = _hit(data.get(field))
+        if word:
+            problems.append(f"{field} 出现「{word}」：报告只对孩子说话，写成“你自己什么时候做什么”，不要写老师/家长")
+    for key, comment in (data.get("typeComments") or {}).items():
+        word = _hit(comment)
+        if word:
+            problems.append(f"题型点评（{key}）出现「{word}」：改成对孩子说的做法")
+    for question in questions:
+        for key in AUTHORED_Q:
+            word = _hit(question.get(key))
+            if word:
+                problems.append(
+                    f"第 {question['id']} 题「{_label(key)}」出现「{word}」：报告发出后不再跟进，别把动作派给老师"
+                )
+    return list(dict.fromkeys(problems))
+
+
+def _teacher_talk_quotes(questions: list) -> list[str]:
+    notes = []
+    for question in questions:
+        for key in QUOTE_Q:
+            word = _hit(question.get(key))
+            if word:
+                notes.append(f"第 {question['id']} 题「{_label(key)}」含「{word}」：若是原卷引用可保留，确认不是我们写的")
+    return list(dict.fromkeys(notes))
 
 
 def _label(key: str) -> str:
