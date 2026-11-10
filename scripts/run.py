@@ -291,7 +291,14 @@ def cmd_finish(args) -> int:
         if render_code:
             print("STOP：渲染失败，先看上面的报错")
             return render_code
-        print(f"NEXT：把 {_default_out(work, args.format, args.docx, False)} 发出去；需要归档就去工作台「打开草稿」导入 draft.json")
+        if args.archive_manifest:
+            from archive_to_workbench import main as archive
+            command = ['--type', 'exam-analysis', '--input', str(draft_of(work)),
+                '--file', str(_default_out(work, args.format, args.docx, False)), '--manifest', str(args.archive_manifest)]
+            if args.student_id:
+                command += ['--student-id', args.student_id]
+            return archive(command)
+        print('NEXT：检查成品后运行 scripts/archive_to_workbench.py 自动归档；详见 references/workbench-archive.md')
         return 0
     print("STOP：还有阻塞项，修完再跑 finish")
     return 1
@@ -362,6 +369,8 @@ def main() -> int:
     finish.add_argument("--format", default="final", choices=FORMATS)
     finish.add_argument("--docx", action="store_true")
     finish.add_argument("--python", default=None)
+    finish.add_argument("--archive-manifest", type=Path)
+    finish.add_argument("--student-id")
     finish.set_defaults(func=cmd_finish)
 
     args = parser.parse_args()
